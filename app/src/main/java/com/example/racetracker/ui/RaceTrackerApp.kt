@@ -52,6 +52,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.racetracker.R
 import com.example.racetracker.ui.theme.RaceTrackerTheme
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun RaceTrackerApp() {
@@ -67,10 +69,23 @@ fun RaceTrackerApp() {
         RaceParticipant(name = "Player 2", progressIncrement = 2)
     }
     var raceInProgress by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(playerOne, playerTwo) {
 
+    if (raceInProgress) {
+        // To call suspend functions safely from inside a composable,
+        // you need to use the LaunchedEffect() composable
+        // playerOne, playerTwo giong tham so text cua Text composable
+        // 1 trong playerOne, playerTwo thay doi thi LaunchedEffect relaunch
+        LaunchedEffect(playerOne, playerTwo) {
+            coroutineScope {
+                // coroutineScope() will only return once all its work,
+                // including any coroutines it launched, have completed
+                launch { playerOne.run() }
+                launch { playerTwo.run() }
+            }
+            raceInProgress = false
+        }
     }
+
 
     RaceTrackerScreen(
         playerOne = playerOne,
